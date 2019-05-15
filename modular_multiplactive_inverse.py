@@ -1,3 +1,5 @@
+# Algorithm taken from https://www.geeksforgeeks.org/multiplicative-inverse-under-modulo-m/
+
 # Iterative Python 3 program to find 
 # modular inverse using extended 
 # Euclid algorithm 
