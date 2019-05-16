@@ -1,47 +1,68 @@
-# using the numbers 5837687 and 8746979 as the primes
-# p = 5527520013513581326121882167187180752073463254277609911934750350965822023838543172229709244319844670433804038920304644097364765738975596420673642099039975011363
-# q = 3453221202185876906638629632175359499099670410652382616441386629981117932849225524689308950511055601388422752776562037360817653410867799137900072936906881621341
-# n = p x q = 19087749306171863871810380694827510321936151288556290924968414152545680422633269156988748885053343369109762064796332040185843368964059881088983759307883543865262806226452211817323767539030052420705781136958831804805243389974303625712875724248368904147763315829905730967162998309785157561501478521776055809645002338297783
-# Φ(n) = (p-1)*(q-1) = 19087749306171863871810380694827510321936151288556290924968414152545680422633269156988748885053343369109762064796332040185843368964059881088983759307883543865253825485236512359091007027230689880454608003293901812276867252993356685756187955551449885952932415558083504175466131628326975142351635126217482094609055481665080
-# e = 6513516734600035718300327211250928237178281758494417357560086828416863929270451437126021949850746381
-# d = 4797430937882968197835627960843345033984183750998952740831450503342021946982305808128002551068483855021074116975101248962667745896946506861335770557875622777747565301071327258276400133919840713768040582582127612584549189193142338449825806040609409358782711930435385386304209947141082713158857864354177240746643982751501
-# public key = (e,n)
-# private key = d
-
-n = 19087749306171863871810380694827510321936151288556290924968414152545680422633269156988748885053343369109762064796332040185843368964059881088983759307883543865262806226452211817323767539030052420705781136958831804805243389974303625712875724248368904147763315829905730967162998309785157561501478521776055809645002338297783
-e = 6513516734600035718300327211250928237178281758494417357560086828416863929270451437126021949850746381
-d = 4797430937882968197835627960843345033984183750998952740831450503342021946982305808128002551068483855021074116975101248962667745896946506861335770557875622777747565301071327258276400133919840713768040582582127612584549189193142338449825806040609409358782711930435385386304209947141082713158857864354177240746643982751501
+from RSA_helper import rsa_key_generation
+from RSA_helper import rsa_text_encryption
+from RSA_helper import rsa_text_decryption
+import subprocess as sp
+import readchar
 
 
-def Fast_Exponentiation(base, power, mod):
-    result = 1
-    while power > 0:
-        if power % 2 == 1:
-            result = (result * base) % mod
-        
-        power = power // 2
-        base = (base * base) % mod
-    return result
+def main():
+    while True:
+        tmp = sp.call('clear', shell=True)
+        print("1. Generate Public and Private Keys")
+        print("2. Encrypt a message")
+        # print("3. Encrypt a message, write to file")
+        print("3. Decrypt a message")
+        # print("5. Decrypt a message from a file")
+        print("0. Exit")
+        print("input: ", end='')
+        n = int(input())
 
+        if n == 1:
+            e, n, d = rsa_key_generation()
+            print("\nPublic Key n =\n", n, sep = '')
+            print("\nPublic Key e =\n", e, sep = '')
+            print("\nPrivate Key d =\n", d, sep = '')
+            print("\nSave these values")
+            print("DO NOT SHATE THE PRIVATE KEY WITH ANYONE!")
+            e = n = d = 0
 
-def RSA_Encryption (P, e, n):
-    C = Fast_Exponentiation (P, e, n)
-    return C
+        elif n == 2:
+            message = input("\nEnter the message to encrypt: ")
+            e = int(input("\nEnter the public key e: ").strip())
+            n = int(input("\nEnter the public key n: ").strip())
+            cipher = rsa_text_encryption(message, e, n)
+            print("\nThe cipher text to be shared is: ")
+            [print(c) for c in cipher]
+            print("\nCopy the cipher text above and transmit it to the receiver")
+            message = ""
+            e = n = 0
 
+        elif n == 3:
+            cipher = []
+            print("Paste the cipher bellow")
+            print("Press enter to denote end of input")
+            while True:
+                line = input().strip()
+                if line:
+                    cipher.append(int(line))
+                else:
+                    break
+            n = int(input("\nEnter the public key n: ").strip())
+            d = int(input("\nEnter the private Key d: ").strip())
+            message = rsa_text_decryption(cipher, d, n)
+            print("The decrypted message is: ")
+            print(message)
+            message = ""
+            n = d = 0
 
-def RSA_Decryption (C, d, n):
-    P = Fast_Exponentiation(C, d, n)
-    return P
+        elif n == 0:
+            exit()
+
+        else:
+            print("Please enter a valid input from 0-3")
+
+        print("\n\nPress enter to continue...")
+        readchar.readkey()
 
 if __name__ == '__main__':
-    plain_text = "General Kenobi. Years ago you served my father in the Clone Wars. Now he begs you to help him in his struggle against the Empire. I regret that I am unable to present my father's request to you in person, but my ship has fallen under attack, and I'm afraid my mission to bring you to Alderaan has failed. I have placed information vital to the survival of the Rebellion into the memory systems of this R2 unit. My father will know how to retrieve it. You must see this droid safely delivered to him on Alderaan. This is our most desperate hour. Help me, Obi-Wan Kenobi. You're my only hope."
-    cypher_text = []
-    decrypted_message = ""
-    for p in plain_text:
-        cypher_text.append(RSA_Encryption(ord(p), e, n))
-    for c in cypher_text:
-        decrypted_message += chr(RSA_Decryption(c, d, n))
-    print("Plain text is: ", plain_text)
-    print("Cypher text is: ", cypher_text)
-    print("Decrypted text is: ", decrypted_message)
-
+    main()
