@@ -38,9 +38,14 @@ def rsa_key_generation():
     """ Generate Public and Private keys for RSA RSA_Encryption
         Returns e, n, d
     """
-    p = generate_prime_number(randint(512,544))
-    q = generate_prime_number(randint(512,544))
-    e = generate_prime_number(randint(1024,1088))
+    e = 65537
+    p = q = e+1
+    # Check to ensure gcd(e,p-1) = gcd(e,q-1) = 1
+    # => gcd(e,(p-1)(q-1)) = gcd(e,phi) = 1
+    while p % e == 1:
+        p = generate_prime_number(512)
+    while q % e == 1:
+        q = generate_prime_number(512)
 
     n = p * q
     phi = (p-1) * (q-1)
