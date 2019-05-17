@@ -1,6 +1,7 @@
 from gen_primes import generate_prime_number
 from random import randint
 from math import gcd
+import binascii
 
 
 def mod_inverse(e, m) :
@@ -88,8 +89,35 @@ def rsa_text_decryption (cipher_list, d, n):
         plain_text += chr(fast_exponentiation (c, d, n))
     return plain_text
 
+
+def rsa_hex_encryption (plain_text, e, n):                  # text
+    hex_data = binascii.hexlify(plain_text.encode())        # hex
+    plain_text_int = int(hex_data, 16)                      # int
+    if plain_text_int > n:
+        return 0
+    cipher = fast_exponentiation(plain_text_int, e, n)
+    return cipher                                           # int
+
+
+def rsa_hex_decryption (cipher, d, n):                      # int
+    decrypted_text = fast_exponentiation(cipher, d, n)      # int
+    hex_data = hex(decrypted_text)[2:]  # removes the 0x    # hex
+    try:
+        plain_text = binascii.unhexlify(hex_data).decode()
+    except:
+        print("\nThe Key is incorrect! Unable to decrypt the cipher!")
+        return ""
+    return plain_text                                       # text
+
 # e,n,d = rsa_key_generation()
 # cipher = rsa_text_encryption("Lol lets try it", e, n)
 # text = rsa_text_decryption(cipher, d, n)
 # print(cipher)
 # print(text)
+
+# e, n, d = rsa_key_generation()
+# message = "Lets see if this works Lets see if this works Lets see if this works Lets see if this works Lets see if this works Lets see if i"
+# cipher = rsa_hex_encryption(message, e, n)
+# print("Cipher =", cipher)
+# new_message = rsa_hex_decryption(cipher, d, n)
+# print("Transmited message =", message)
