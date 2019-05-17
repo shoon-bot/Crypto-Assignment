@@ -1,6 +1,6 @@
 from RSA_helper import rsa_key_generation
-from RSA_helper import rsa_text_encryption
-from RSA_helper import rsa_text_decryption
+from RSA_helper import rsa_hex_encryption
+from RSA_helper import rsa_hex_decryption
 import subprocess as sp
 import readchar
 import os
@@ -17,13 +17,18 @@ def main():
         print("4. Encrypt a message")
         print("5. Decrypt a message")
         print("0. Exit")
-        n = int(input("input: "))
+        try:
+            n = int(input("input: "))
+        except:
+            print("\nPlease enter a valid input...")
+            readchar.readkey()
+            continue
 
         if n == 1:
             e, n, d = rsa_key_generation()
-            print("\nPublic Key e =\n", e, sep = '')
-            print("\nPublic Key n =\n", n, sep = '')
-            print("\nPrivate Key d =\n", d, sep = '')
+            print("\nExponent Public Key, E =", e)
+            print("\nModulus Public Key, N =\n", n, sep = '')
+            print("\nPrivate Key D =\n", d, sep = '')
             print("\nCopy these values")
             print("DO NOT SHATE THE PRIVATE KEY WITH ANYONE!")
 
@@ -39,15 +44,15 @@ def main():
             e = n = d = 0
 
         elif n == 2:
-            E = int(input("\nEnter the Public Key E to store in memory: ").strip())
-            N = int(input("\nEnter the Public Key N to store in memory: ").strip())
+            E = int(input("\nEnter the Public Key Exponent 'E' to store in memory: ").strip())
+            N = int(input("\nEnter the Public Key Modulus 'N' to store in memory: ").strip())
             print("\nValues Successfully Stored")
             public_set = True
 
         elif n == 3:
-            D = int(input("\nEnter the Private Key D to store in memory: ").strip())
+            D = int(input("\nEnter the Private Key 'D' to store in memory: ").strip())
             if public_set:
-                c = input("\nDo you want to keep the current value of N stored in memory? [Y/n]: ")
+                c = input("\nDo you want to use the current value of N stored in memory? [Y/n]: ")
                 if c in "Yy":
                     print("Keeping value N =", N)
                 else:
@@ -60,65 +65,58 @@ def main():
         elif n == 4:
             message = input("\nEnter the message to encrypt: ")
             if public_set:
-                cipher = rsa_text_encryption(message, E, N)
+                cipher = rsa_hex_encryption(message, E, N)
             else:
                 e = int(input("\nEnter the Public Key e: ").strip())
                 n = int(input("\nEnter the Public Key n: ").strip())
-                cipher = rsa_text_encryption(message, e, n)
-            print("\nThe cipher text to be shared is: \n")
-            [print(ci) for ci in cipher]
+                cipher = rsa_hex_encryption(message, e, n)
+            if cipher == 0:
+                print("The Text entered is too large to be encrypted.")
+                print("Please Try again with smaller text")
+                continue
+            print("\nThe cipher text to be shared is: ")
+            print(cipher)
             print("\nCopy the cipher text above and transmit it to the receiver")
-            c = input("\nDo you want to store the cipher text to a file? [Y/n]: ")
+            c = input("\nDo you want to store the cipher text in a file? [Y/n]: ")
             if c in 'Yy':
-                file = open("cipher text.txt", "w")
-                [file.write(str(ci) + "\n") for ci in cipher]
-                # file.writelines(cipher)
-                # cipher_string = []
-                # [cipher_string.append(str(cip) + "\n") for cip in cipher]
-                # file.writelines(cipher_string)
+                file = open("cipher_text.txt", "w")
+                file.write(str(cipher))
                 file.close()
                 file = None
+                print("The cipher was stored in the file cipher_text.txt")
             message = ""
             e = n = 0
 
         elif n == 5:
-            cipher = []
-            exists = os.path.isfile('cipher text.txt')
+            exists = os.path.isfile('cipher_text.txt')
             if exists:
-                c = input("\nDo you want to read the cipher text from the file? [Y/n]: ")
+                c = input("\nDo you want to read the cipher text from the file 'cipher_text.txt'? [Y/n]: ")
                 if c in 'Yy':
-                    file = open("cipher text.txt", "r")
-                    cipher_str = file.readlines()
-                    [cipher.append(int(ci)) for ci in cipher_str]
+                    file = open("cipher_text.txt", "r")
+                    cipher = int(file.read())
                 else:
-                    print("\nPaste the cipher bellow")
-                    print("Press enter to denote end of input:")
-                    while True:
-                        line = input().strip()
-                        if line:
-                            cipher.append(int(line))
-                        else:
-                            break
+                    print("\nPaste the cipher bellow:")
+                    cipher = int(input().strip())
             else:
-                print("Paste the cipher bellow")
-                print("Press enter to denote end of input")
-                while True:
-                    line = input().strip()
-                    if line:
-                        cipher.append(int(line))
-                    else:
-                        break
+                print("\nPaste the cipher bellow:")
+                cipher = int(input().strip())
+
             if private_set:
-                message = rsa_text_decryption(cipher, D, N)
+                message = rsa_hex_decryption(cipher, D, N)
             elif public_set:
                 c = input("Do you want to use the same value of N stored in memory? [Y/n]: ")
                 if c in "Yy":
                     print("Using value N =", N)
                     n = N
                 else:
-                    n = int(input("\nEnter the Public Key n: ").strip())
-                d = int(input("\nEnter the Private Key d: ").strip())
-                message = rsa_text_decryption(cipher, d, n)
+                    n = int(input("\nEnter the Public Key Moculus 'N': ").strip())
+                d = int(input("\nEnter the Private Key 'D': ").strip())
+                message = rsa_hex_decryption(cipher, d, n)
+            else:
+                n = int(input("\nEnter the Public Key Moculus 'N': ").strip())
+                d = int(input("\nEnter the Private Key 'D': ").strip())
+                message = rsa_hex_decryption(cipher, d, n)
+
             print("\nThe decrypted message is: ")
             print('"', message, '"', sep='')
             message = ""
@@ -130,7 +128,7 @@ def main():
         else:
             print("Please enter a valid input from 0-3")
 
-        print("\nPress enter to continue...")
+        print("\nPress any key to continue...")
         readchar.readkey()
 
 if __name__ == '__main__':
